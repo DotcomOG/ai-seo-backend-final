@@ -10,6 +10,10 @@ const port = process.env.PORT || 8080;
 app.use(cors({ origin: "https://ai-seo-clean.vercel.app" }));
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.send("👋 Hello from root route!");
+});
+
 // ✅ The /friendly route
 app.get("/friendly", async (req, res) => {
   try {
