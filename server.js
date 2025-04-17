@@ -41,4 +41,6 @@ app.get("/friendly", async (req, res) => {
 // ✅ Start the server
 app.listen(port, () => {
   console.log(`✅ Server running on port ${port}`);
+  console.log(`🧠 Loaded version: ai-seo-final-${new Date().toISOString()}`);
+
 });
