@@ -1,4 +1,4 @@
-# Use Node 18 base image
+# Use Node 18 as base
 FROM node:18
 
 # Set working directory
@@ -10,7 +10,7 @@ COPY . .
 # Install dependencies
 RUN npm install
 
-# Expose port 8080 to match server.js
+# Expose port
 EXPOSE 8080
 
 # Start the server
