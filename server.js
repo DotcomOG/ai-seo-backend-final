@@ -1,4 +1,4 @@
-console.log("🚀 server.js STARTED");
+// 🚀 server.js STARTED
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
@@ -6,9 +6,14 @@ const axios = require("axios");
 const app = express();
 const port = process.env.PORT || 8080;
 
-app.use(cors({ origin: "https://ai-ca2twl467-yoram-ezras-projects.vercel.app" }));
+// ✅ Allow ONLY your Vercel frontend domain
+app.use(cors({
+  origin: "https://ai-ca2twl467-yoram-ezras-projects.vercel.app"
+}));
+
 app.use(express.json());
 
+// ✅ Root route (for health check)
 app.get("/", (req, res) => {
   res.send("👋 Hello from root route!");
 });
@@ -19,7 +24,7 @@ app.get("/friendly", async (req, res) => {
     const url = req.query.url;
     if (!url) return res.status(400).json({ error: "URL is required" });
 
-    // 🧪 Example static output — replace later with real analysis
+    // 🧪 Static example response (replace with real logic if needed)
     return res.json({
       score: 78,
       ai_superpowers: [
@@ -47,5 +52,4 @@ app.get("/friendly", async (req, res) => {
 app.listen(port, '0.0.0.0', () => {
   console.log(`✅ Server running on port ${port}`);
   console.log(`🧠 Loaded version: ai-seo-final-${new Date().toISOString()}`);
-
 });
