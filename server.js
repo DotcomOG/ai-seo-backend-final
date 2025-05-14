@@ -1,5 +1,5 @@
 // server.js
-// 2025-05-14 17:30:00 ET — Site-specific audit with 10k-char context
+// 2025-05-14 17:40:00 ET — Force exactly 5 strengths, ≥10 opportunities, and insights
 
 require('dotenv').config();
 const express = require('express');
@@ -26,7 +26,6 @@ app.get('/friendly', async (req, res) => {
   }
 
   try {
-    // Fetch and clean HTML
     const { data: rawHtml } = await axios.get(url);
     let content = rawHtml || '';
     content = content
@@ -37,15 +36,14 @@ app.get('/friendly', async (req, res) => {
       .trim()
       .slice(0, 10000);
 
-    // Build AI prompt
     const systemPrompt =
-      'You are an expert SEO auditor. Review this SPECIFIC page’s content and return ONLY a JSON object with:' +
-      ' score: integer 1–10,' +
-      ' score_explanation: concise reason based on this page,’ +
-      ' ai_superpowers: EXACTLY 5 real strengths this page demonstrates, each { title, explanation },' +
-      ' ai_opportunities: ≥10 real issues on this page, each { title, explanation, contact_url },' +
-      ' ai_engine_insights: object of per-engine actionable insights.' +
-      ' Use contact_url "https://example.com/contact". JSON only—no generic definitions.';
+      'You are an expert SEO auditor. Review the provided page content and return ONLY a JSON object with exactly these keys:\n' +
+      '- score: integer 1–10\n' +
+      '- score_explanation: concise reason for the score based on this page\n' +
+      '- ai_superpowers: array of EXACTLY 5 distinct strengths this page clearly demonstrates, each an object with title and explanation\n' +
+      '- ai_opportunities: array of AT LEAST 10 distinct issues you observe on this page, each with title, explanation, and contact_url\n' +
+      '- ai_engine_insights: object mapping at least two major search engines (e.g., Google, Bing) to a concise, actionable insight\n' +
+      'Use contact_url "https://example.com/contact" for all AI opportunities. Do NOT list generic SEO definitions—only specific observations from the page content. JSON only.';
 
     const userPrompt = 
       'URL: ' + url + '\n\n' +
