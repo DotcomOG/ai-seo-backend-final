@@ -1,5 +1,5 @@
 // server.js
-// 2025-05-14 17:55:00 ET — Site-wide AI SEO scan prompt (no page references)
+// 2025-05-14 18:15:00 ET — Refine strengths for AI-specific SEO metrics
 
 require('dotenv').config();
 const express = require('express');
@@ -18,15 +18,10 @@ app.get('/health', (_req, res) => res.send('OK'));
 
 app.get('/friendly', async (req, res) => {
   const { type, url } = req.query;
-  if (type !== 'summary') {
-    return res.status(400).json({ error: 'Only summary mode is supported.' });
-  }
-  if (!url) {
-    return res.status(400).json({ error: 'Missing url parameter' });
-  }
+  if (type !== 'summary') return res.status(400).json({ error: 'Only summary mode is supported.' });
+  if (!url) return res.status(400).json({ error: 'Missing url parameter' });
 
   try {
-    // Fetch and clean site homepage HTML for context
     const { data: rawHtml } = await axios.get(url);
     let content = rawHtml || '';
     content = content
@@ -38,15 +33,13 @@ app.get('/friendly', async (req, res) => {
       .slice(0, 10000);
 
     const systemPrompt =
-      'You are an expert AI SEO auditor. Your goal is to help organizations maximize their visibility across AI-driven search engines by performing a site-wide audit (not just a single page).' +
-      ' Return ONLY a JSON object with:' +
-      '\n• score: integer 1–10 rating the overall site for AI SEO visibility' +
-      '\n• score_explanation: concise reason for that score based on site-wide observations (e.g., structured data, content breadth, navigation)' +
-      '\n• ai_superpowers: array of EXACTLY 5 real strengths the site demonstrates for AI SEO, each as { title, explanation }' +
-      '\n• ai_opportunities: array of AT LEAST 10 concrete issues across the site that hinder AI search visibility, each as { title, explanation, contact_url }' +
-      '\n• ai_engine_insights: object mapping major AI search engines (e.g., "Google AI", "Bing AI") to concise, actionable insights.' +
-      ' Use contact_url "https://example.com/contact" for all opportunities. Do NOT include any references to individual pages—speak only about the site.' +
-      ' JSON only—no generic SEO definitions.';
+      'You are a senior AI SEO consultant. Analyze the entire site content for its visibility in AI-powered search engines like Google AI and Bing AI. Return ONLY a JSON object with:' +
+      '\n• score: integer 1–10 rating AI search visibility' +
+      '\n• score_explanation: succinct rationale referencing AI-centric factors (e.g., semantic clarity, structured data for AI models, context richness)' +
+      '\n• ai_superpowers: EXACTLY 5 specific strengths the site exhibits for AI SEO, each as { title, explanation }, with explanations using 3–5 sentences that tie directly to AI search evaluation criteria such as prompt relevance, entity recognition, context depth' +
+      '\n• ai_opportunities: AT LEAST 10 concrete issues across the site that hinder AI search visibility, each as { title, explanation, contact_url }, with explanations of 3–5 sentences framing the business impact and AI ranking consequences' +
+      '\n• ai_engine_insights: object mapping "Google AI" and "Bing AI" to actionable bullet-point insights on optimizing for each AI engine' +
+      '\nUse contact_url \"https://example.com/contact\" for each opportunity. Do NOT list generic SEO terms; focus on AI model considerations. JSON only.';
 
     const userPrompt =
       'Site URL: ' + url + '\n\n' +
@@ -78,3 +71,4 @@ app.get('/friendly', async (req, res) => {
 
 app.use(express.static('public'));
 app.listen(PORT, () => console.log('Server running on port ' + PORT));
+```
