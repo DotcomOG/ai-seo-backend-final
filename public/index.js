@@ -1,5 +1,5 @@
 // public/index.js
-// 2025-05-14 14:15:00 ET — Styled summary render
+// 2025-05-14 16:10:00 ET — Summary-only flow
 
 document.addEventListener('DOMContentLoaded', function(){
   const form      = document.getElementById('analyzerForm');
