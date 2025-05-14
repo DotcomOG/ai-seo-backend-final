@@ -1,5 +1,5 @@
 // server.js
-// 2025-05-14 17:40:00 ET — Force exactly 5 strengths, ≥10 opportunities, and insights
+// 2025-05-14 17:50:00 ET — Refined prompt for AI SEO focusing on AI search engine visibility
 
 require('dotenv').config();
 const express = require('express');
@@ -37,15 +37,16 @@ app.get('/friendly', async (req, res) => {
       .slice(0, 10000);
 
     const systemPrompt =
-      'You are an expert SEO auditor. Review the provided page content and return ONLY a JSON object with exactly these keys:\n' +
-      '- score: integer 1–10\n' +
-      '- score_explanation: concise reason for the score based on this page\n' +
-      '- ai_superpowers: array of EXACTLY 5 distinct strengths this page clearly demonstrates, each an object with title and explanation\n' +
-      '- ai_opportunities: array of AT LEAST 10 distinct issues you observe on this page, each with title, explanation, and contact_url\n' +
-      '- ai_engine_insights: object mapping at least two major search engines (e.g., Google, Bing) to a concise, actionable insight\n' +
-      'Use contact_url "https://example.com/contact" for all AI opportunities. Do NOT list generic SEO definitions—only specific observations from the page content. JSON only.';
+      'You are an expert AI SEO auditor. Your goal is to help organizations maximize their visibility in AI-driven search engines (like AI-powered Bing, Google AI, etc.) by analyzing their page content.' +
+      ' Return ONLY a JSON object with these keys:' +
+      '\n• score: integer 1–10 based on how well this page is optimized for AI search visibility' +
+      '\n• score_explanation: concise reason for the score, referring specifically to elements that impact AI SEO (e.g., structured data, keyword relevance for AI models)' +
+      '\n• ai_superpowers: array of EXACTLY 5 real strengths this page demonstrates for AI SEO, each as { title, explanation }' +
+      '\n• ai_opportunities: array of AT LEAST 10 real, concrete issues found on this page that hinder AI search visibility, each as { title, explanation, contact_url }' +
+      '\n• ai_engine_insights: object mapping major AI search engines (e.g., "Google AI", "Bing AI") to concise, actionable insights.' +
+      ' Use contact_url "https://example.com/contact" for all opportunities. Do NOT include generic SEO definitions—only observations from this page. JSON only.';
 
-    const userPrompt = 
+    const userPrompt =
       'URL: ' + url + '\n\n' +
       'CONTENT:\n' + content;
 
