@@ -1,5 +1,5 @@
 // server.js
-// 2025-05-14 16:45:00 ET — Site-specific audit prompt
+// 2025-05-14 17:30:00 ET — Site-specific audit with 10k-char context
 
 require('dotenv').config();
 const express = require('express');
@@ -17,8 +17,7 @@ const PORT   = process.env.PORT || 8080;
 app.get('/health', (_req, res) => res.send('OK'));
 
 app.get('/friendly', async (req, res) => {
-  const type = req.query.type;
-  const url  = req.query.url;
+  const { type, url } = req.query;
   if (type !== 'summary') {
     return res.status(400).json({ error: 'Only summary mode is supported.' });
   }
@@ -36,22 +35,21 @@ app.get('/friendly', async (req, res) => {
       .replace(/<[^>]+>/g, ' ')
       .replace(/\s+/g, ' ')
       .trim()
-      .slice(0, 1000);
+      .slice(0, 10000);
 
-    // Focused AI prompt
+    // Build AI prompt
     const systemPrompt =
-      'You are an SEO auditor. Read the provided page content and produce a JSON with these keys:' +
+      'You are an expert SEO auditor. Review this SPECIFIC page’s content and return ONLY a JSON object with:' +
       ' score: integer 1–10,' +
-      ' score_explanation: a concise explanation of that score based solely on this page,' +
-      ' ai_superpowers: real strengths this specific page demonstrates as {title, explanation},' +
-      ' ai_opportunities: real, concrete issues found on this specific page as {title, explanation, contact_url},' +
-      ' ai_engine_insights: per-engine actionable insight strings.' +
-      ' Do NOT define generic SEO terms—only reference what you see on the page. ' +
-      'contact_url must be "https://example.com/contact" for every opportunity. JSON only.';
+      ' score_explanation: concise reason based on this page,’ +
+      ' ai_superpowers: EXACTLY 5 real strengths this page demonstrates, each { title, explanation },' +
+      ' ai_opportunities: ≥10 real issues on this page, each { title, explanation, contact_url },' +
+      ' ai_engine_insights: object of per-engine actionable insights.' +
+      ' Use contact_url "https://example.com/contact". JSON only—no generic definitions.';
 
-    const userPrompt =
-      'URL: ' + url + '\\n\\n' +
-      'CONTENT:\\n' + content;
+    const userPrompt = 
+      'URL: ' + url + '\n\n' +
+      'CONTENT:\n' + content;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
