@@ -1,5 +1,5 @@
 // server.js
-// 2025-05-14 17:50:00 ET — Refined prompt for AI SEO focusing on AI search engine visibility
+// 2025-05-14 17:55:00 ET — Site-wide AI SEO scan prompt (no page references)
 
 require('dotenv').config();
 const express = require('express');
@@ -26,6 +26,7 @@ app.get('/friendly', async (req, res) => {
   }
 
   try {
+    // Fetch and clean site homepage HTML for context
     const { data: rawHtml } = await axios.get(url);
     let content = rawHtml || '';
     content = content
@@ -37,18 +38,19 @@ app.get('/friendly', async (req, res) => {
       .slice(0, 10000);
 
     const systemPrompt =
-      'You are an expert AI SEO auditor. Your goal is to help organizations maximize their visibility in AI-driven search engines (like AI-powered Bing, Google AI, etc.) by analyzing their page content.' +
-      ' Return ONLY a JSON object with these keys:' +
-      '\n• score: integer 1–10 based on how well this page is optimized for AI search visibility' +
-      '\n• score_explanation: concise reason for the score, referring specifically to elements that impact AI SEO (e.g., structured data, keyword relevance for AI models)' +
-      '\n• ai_superpowers: array of EXACTLY 5 real strengths this page demonstrates for AI SEO, each as { title, explanation }' +
-      '\n• ai_opportunities: array of AT LEAST 10 real, concrete issues found on this page that hinder AI search visibility, each as { title, explanation, contact_url }' +
+      'You are an expert AI SEO auditor. Your goal is to help organizations maximize their visibility across AI-driven search engines by performing a site-wide audit (not just a single page).' +
+      ' Return ONLY a JSON object with:' +
+      '\n• score: integer 1–10 rating the overall site for AI SEO visibility' +
+      '\n• score_explanation: concise reason for that score based on site-wide observations (e.g., structured data, content breadth, navigation)' +
+      '\n• ai_superpowers: array of EXACTLY 5 real strengths the site demonstrates for AI SEO, each as { title, explanation }' +
+      '\n• ai_opportunities: array of AT LEAST 10 concrete issues across the site that hinder AI search visibility, each as { title, explanation, contact_url }' +
       '\n• ai_engine_insights: object mapping major AI search engines (e.g., "Google AI", "Bing AI") to concise, actionable insights.' +
-      ' Use contact_url "https://example.com/contact" for all opportunities. Do NOT include generic SEO definitions—only observations from this page. JSON only.';
+      ' Use contact_url "https://example.com/contact" for all opportunities. Do NOT include any references to individual pages—speak only about the site.' +
+      ' JSON only—no generic SEO definitions.';
 
     const userPrompt =
-      'URL: ' + url + '\n\n' +
-      'CONTENT:\n' + content;
+      'Site URL: ' + url + '\n\n' +
+      'SITE CONTENT (first 10000 chars):\n' + content;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
