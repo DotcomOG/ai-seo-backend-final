@@ -3,23 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI SEO Analyzer</title>
+  <title>AI SEO Analyzer (Summary Only)</title>
   <style>
     body { font-family: Helvetica, sans-serif; margin: 2rem; }
     form { margin-bottom: 1rem; }
-    select, input, button { padding: .5rem; margin-right: .5rem; }
+    input, button { padding: .5rem; margin-right: .5rem; }
     pre { background: #f5f5f5; padding: 1rem; white-space: pre-wrap; }
   </style>
 </head>
 <body>
-  <h1>AI SEO Analyzer</h1>
+  <h1>AI SEO Analyzer (Summary Only)</h1>
   <form id="analyzerForm">
-    <select id="type">
-      <option value="summary">Summary</option>
-      <option value="full">Full</option>
-    </select>
     <input type="url" id="url" placeholder="https://example.com" required style="width:60%;" />
-    <button type="submit">Analyze</button>
+    <button type="submit">Analyze Summary</button>
   </form>
   <pre id="result">Awaiting input…</pre>
   <script src="index.js"></script>
