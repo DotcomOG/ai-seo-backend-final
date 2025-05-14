@@ -3,21 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI SEO Analyzer (Summary Only)</title>
+  <title>AI SEO Analyzer</title>
   <style>
-    body { font-family: Helvetica, sans-serif; margin: 2rem; }
-    form { margin-bottom: 1rem; }
-    input, button { padding: .5rem; margin-right: .5rem; }
-    pre { background: #f5f5f5; padding: 1rem; white-space: pre-wrap; }
+    body { font-family: Helvetica, sans-serif; margin: 2rem; background: #fff; color: #222; }
+    h1 { margin-bottom: 1rem; }
+    form { margin-bottom: 1.5rem; }
+    input, button { padding: .5rem; margin-right: .5rem; border-radius: 4px; border:1px solid #ccc; }
+    button { background: #0066cc; color: #fff; border: none; cursor: pointer; }
+    button:hover { opacity: .9; }
+    .loader { font-style: italic; color: #555; margin-top: .5rem; }
+    .error { color: #c00; margin-top: .5rem; font-weight: bold; }
+    .section { margin-top: 2rem; }
+    .score { font-size: 3rem; font-weight: bold; color: #111; }
+    ul { list-style: disc inside; padding-left: 0; }
+    .list-item { margin-bottom: .75rem; }
+    #insights { margin-top: 1rem; }
   </style>
 </head>
 <body>
-  <h1>AI SEO Analyzer (Summary Only)</h1>
+  <h1>AI SEO Analyzer</h1>
   <form id="analyzerForm">
     <input type="url" id="url" placeholder="https://example.com" required style="width:60%;" />
     <button type="submit">Analyze Summary</button>
   </form>
-  <pre id="result">Awaiting input…</pre>
+  <div id="status" class="loader"></div>
+  <div id="results" style="display:none;">
+    <div class="section">
+      <h2>Overall Score</h2>
+      <div id="score" class="score"></div>
+    </div>
+    <div class="section">
+      <h2>AI Superpowers</h2>
+      <ul id="superpowers"></ul>
+    </div>
+    <div class="section">
+      <h2>AI Opportunities</h2>
+      <ul id="opportunities"></ul>
+    </div>
+    <div class="section">
+      <h2>AI Engine Insights</h2>
+      <div id="insights"></div>
+    </div>
+  </div>
   <script src="index.js"></script>
 </body>
 </html>

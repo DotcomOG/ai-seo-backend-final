@@ -1,28 +1,74 @@
 // public/index.js
-// Summary-only MVP
+// 2025-05-14 14:15:00 ET — Styled summary render
 
 document.addEventListener('DOMContentLoaded', function(){
-  var form     = document.getElementById('analyzerForm');
-  var resultEl = document.getElementById('result');
+  const form      = document.getElementById('analyzerForm');
+  const statusEl  = document.getElementById('status');
+  const resultsEl = document.getElementById('results');
+  const scoreEl   = document.getElementById('score');
+  const spList    = document.getElementById('superpowers');
+  const oppList   = document.getElementById('opportunities');
+  const insights  = document.getElementById('insights');
 
-  form.addEventListener('submit', function(e){
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    var rawUrl = document.getElementById('url').value.trim();
-    var url = rawUrl.startsWith('http://') 
-      ? 'https://' + rawUrl.slice(7) 
+    const rawUrl = document.getElementById('url').value.trim();
+    const url    = rawUrl.startsWith('http://')
+      ? 'https://' + rawUrl.slice(7)
       : rawUrl;
 
-    resultEl.textContent = 'Analyzing...';
+    statusEl.textContent    = 'Analyzing...';
+    statusEl.className      = 'loader';
+    resultsEl.style.display = 'none';
+    spList.innerHTML        = '';
+    oppList.innerHTML       = '';
+    insights.innerHTML      = '';
+    scoreEl.textContent     = '';
 
-    fetch('/friendly?type=summary&url=' + encodeURIComponent(url))
-      .then(function(res){
-        return res.json();
-      })
-      .then(function(data){
-        resultEl.textContent = JSON.stringify(data, null, 2);
-      })
-      .catch(function(err){
-        resultEl.textContent = 'Error: ' + err.message;
-      });
+    try {
+      const res = await fetch('/friendly?type=summary&url=' + encodeURIComponent(url));
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || res.statusText);
+
+      statusEl.textContent = '';
+      scoreEl.textContent  = data.score ?? 'N/A';
+
+      if (Array.isArray(data.ai_superpowers) && data.ai_superpowers.length) {
+        data.ai_superpowers.forEach(p => {
+          const li = document.createElement('li');
+          li.className = 'list-item';
+          li.innerHTML = `<strong>${p.title}</strong>: ${p.explanation}`;
+          spList.appendChild(li);
+        });
+      } else {
+        spList.innerHTML = '<li>No AI Superpowers found.</li>';
+      }
+
+      if (Array.isArray(data.ai_opportunities) && data.ai_opportunities.length) {
+        data.ai_opportunities.forEach(o => {
+          const li = document.createElement('li');
+          li.className = 'list-item';
+          li.innerHTML = `<strong>${o.title}</strong>: ${o.explanation}`;
+          oppList.appendChild(li);
+        });
+      } else {
+        oppList.innerHTML = '<li>No AI Opportunities found.</li>';
+      }
+
+      if (data.ai_engine_insights && typeof data.ai_engine_insights === 'object') {
+        Object.entries(data.ai_engine_insights).forEach(([engine, text]) => {
+          const div = document.createElement('div');
+          div.innerHTML = `<h3>${engine}</h3><p>${text}</p>`;
+          insights.appendChild(div);
+        });
+      } else {
+        insights.innerHTML = '<p>No AI Engine Insights found.</p>';
+      }
+
+      resultsEl.style.display = 'block';
+    } catch (err) {
+      statusEl.textContent = 'Error: ' + err.message;
+      statusEl.className   = 'error';
+    }
   });
 });
