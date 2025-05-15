@@ -42,13 +42,19 @@ app.get('/friendly', async (req, res) => {
 
   // Prompt
   const systemPrompt =
-    `You are a senior AI SEO consultant. Analyze the entire site for AI-driven search visibility (Google AI, Bing AI). Return ONLY a JSON with:\n` +
-    `score (1–10),\n` +
-    `score_explanation,\n` +
-    `ai_superpowers (5 items with 3–5 sentence explanations),\n` +
-    `ai_opportunities (at least 10 items with 3–5 sentence impact explanations and contact_url),\n` +
-    `ai_engine_insights ("Google AI" and "Bing AI" insights).\n` +
-    `JSON only.`;
+    `You are a senior AI SEO consultant. Analyze the entire site for AI-driven search engine visibility (Google AI, Bing AI). Return ONLY a JSON object with keys:
+` +
+    `• score (1–10 integer),
+` +
+    `• score_explanation (concise rationale),
+` +
+    `• ai_superpowers: array of exactly 5 items, each an object with keys 'title' and 'explanation'. Each 'explanation' must be 3–5 sentences focusing exclusively on AI SEO factors such as semantic clarity, structured data, content architecture, and AI-indexing relevance.
+` +
+    `• ai_opportunities: array of at least 10 items, each an object with keys 'title', 'explanation', and 'contact_url'. Each 'explanation' must be 3–5 sentences describing specific AI SEO improvements needed, business impact, and why AI engines would benefit. Use 'contact_url' set to "https://example.com/contact".
+` +
+    `• ai_engine_insights: object mapping exactly two properties, 'Google AI' and 'Bing AI', each with a string of 2–3 sentences of actionable insights.
+` +
+    `Do NOT use any other key names or formats. JSON only, no markdown or extra text.`;
 
   const userPrompt = `Site URL: ${fetchUrl}\n\nCONTENT (first 10000 chars):\n${content}`;
 
