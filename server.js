@@ -1,5 +1,5 @@
 // server.js
-// 2025-05-14 18:20:00 ET — Final site-wide AI SEO audit prompt
+// 2025-05-15 09:25:00 ET — Follow redirects to handle HTTP URLs
 
 require('dotenv').config();
 const express = require('express');
@@ -21,8 +21,12 @@ app.get('/friendly', async (req, res) => {
   if (type !== 'summary') return res.status(400).json({ error: 'Only summary mode is supported.' });
   if (!url) return res.status(400).json({ error: 'Missing url parameter' });
 
+  // Normalize to HTTPS and follow redirects
+  const fetchUrl = url.startsWith('http://') ? 'https://' + url.slice(7) : url;
+
   try {
-    const { data: rawHtml } = await axios.get(url);
+    const response = await axios.get(fetchUrl, { maxRedirects: 5 });
+    const rawHtml = response.data;
     let content = (rawHtml || '')
       .replace(/<script[\s\S]*?<\/script>/gi, ' ')
       .replace(/<style[\s\S]*?<\/style>/gi, ' ')
@@ -32,15 +36,15 @@ app.get('/friendly', async (req, res) => {
       .slice(0, 10000);
 
     const systemPrompt = 
-      `You are a senior AI SEO consultant. Analyze the entire site for visibility in AI-driven search engines like Google AI and Bing AI. Return ONLY a JSON object with:\n\n` +
+      `You are a senior AI SEO consultant. Analyze the entire site for visibility in AI-driven search engines like Google AI and Bing AI. Return ONLY a JSON object with:\n` +
       `• score: integer 1–10 rating overall AI SEO readiness\n` +
-      `• score_explanation: concise rationale referencing AI-centric factors (semantic clarity, structured data, context depth)\n` +
-      `• ai_superpowers: array of EXACTLY 5 strengths the site shows for AI SEO, each { title, explanation } with 3–5 sentence AI-focused rationale\n` +
-      `• ai_opportunities: array of AT LEAST 10 issues hindering AI SEO, each { title, explanation, contact_url } with 3–5 sentence business and AI ranking impact; use contact_url "https://example.com/contact"\n` +
-      `• ai_engine_insights: object mapping "Google AI" and "Bing AI" to concise actionable insights.\n\n` +
-      `Do NOT reference individual pages or generic SEO definitions—only site-wide, AI-centric observations. JSON only.`;
+      `• score_explanation: concise rationale referencing AI-centric factors\n` +
+      `• ai_superpowers: EXACTLY 5 strengths { title, explanation } with 3–5 sentence AI-focused rationale\n` +
+      `• ai_opportunities: AT LEAST 10 issues { title, explanation, contact_url } with business and AI ranking impact; use contact_url \"https://example.com/contact\"\n` +
+      `• ai_engine_insights: object mapping \"Google AI\" and \"Bing AI\" to actionable insights.\n` +
+      `Do NOT reference individual pages or generic SEO definitions. JSON only.`;
 
-    const userPrompt = `Site URL: ${url}\n\nSITE CONTENT (first 10000 chars):\n${content}`;
+    const userPrompt = `Site URL: ${fetchUrl}\n\nSITE CONTENT (truncated):\n${content}`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
@@ -51,17 +55,17 @@ app.get('/friendly', async (req, res) => {
       ]
     });
 
-    const aiText = completion.choices[0].message.content;
     let json;
     try {
-      json = JSON.parse(aiText);
+      json = JSON.parse(completion.choices[0].message.content);
     } catch (e) {
-      return res.status(500).json({ error: 'Invalid JSON from AI', aiText });
+      return res.status(500).json({ error: 'Invalid JSON from AI', aiText: completion.choices[0].message.content });
     }
     res.json(json);
-
   } catch (err) {
-    const msg = err.response?.data?.error || err.message || 'Unknown error';
+    const msg = err.response?.status
+      ? `HTTP ${err.response.status}: ${err.response.statusText}`
+      : err.message || 'Unknown error';
     res.status(500).json({ error: msg });
   }
 });
