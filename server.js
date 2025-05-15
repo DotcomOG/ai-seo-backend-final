@@ -1,5 +1,5 @@
 // server.js
-// 2025-05-15 09:40:00 ET — Handle 307 redirects manually for problematic domains
+// 2025-05-15 10:45:00 ET — Final simplified redirect handling
 
 require('dotenv').config();
 const express = require('express');
@@ -21,27 +21,26 @@ app.get('/friendly', async (req, res) => {
   if (type !== 'summary') return res.status(400).json({ error: 'Only summary mode is supported.' });
   if (!url) return res.status(400).json({ error: 'Missing url parameter' });
 
-  // Normalize HTTP to HTTPS
-  const fetchUrl = url.startsWith('http://') ? 'https://' + url.slice(7) : url;
-  let rawHtml;
+  // Ensure HTTPS
+  let fetchUrl = url.startsWith('http://')
+    ? 'https://' + url.slice(7)
+    : url;
 
+  let rawHtml;
   try {
-    // Attempt initial fetch with redirects
-    rawHtml = (await axios.get(fetchUrl, { maxRedirects: 5 })).data;
+    // Axios follows 301/302/307 by default
+    const response = await axios.get(fetchUrl, { maxRedirects: 5 });
+    rawHtml = response.data;
   } catch (err) {
-    // If 307 Temporary Redirect, follow location header
-    if (err.response?.status === 307 && err.response.headers.location) {
-      rawHtml = (await axios.get(err.response.headers.location, { maxRedirects: 5 })).data;
-    } else {
-      const msg = err.response?.status
-        ? `HTTP ${err.response.status}: ${err.response.statusText}`
-        : err.message || 'Unknown error';
-      return res.status(500).json({ error: msg });
-    }
+    const status = err.response?.status;
+    const msg = status
+      ? `HTTP ${status}: ${err.response.statusText}`
+      : err.message || 'Unknown error';
+    return res.status(500).json({ error: msg });
   }
 
-  // Clean and truncate content
-  let content = (rawHtml || '')
+  // Clean and truncate
+  const content = String(rawHtml)
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
     .replace(/<style[\s\S]*?<\/style>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
@@ -49,33 +48,38 @@ app.get('/friendly', async (req, res) => {
     .trim()
     .slice(0, 10000);
 
-  const systemPrompt = 
-    `You are a senior AI SEO consultant. Analyze the entire site for visibility in AI-driven search engines like Google AI and Bing AI. Return ONLY a JSON object with:\n` +
-    `• score: integer 1–10 rating overall AI SEO readiness\n` +
-    `• score_explanation: concise rationale referencing AI factors\n` +
-    `• ai_superpowers: EXACTLY 5 strengths with titles and 3–5 sentence AI-focused explanations\n` +
-    `• ai_opportunities: AT LEAST 10 issues with titles, 3–5 sentence impact reasoning, and contact_url \"https://example.com/contact\"\n` +
-    `• ai_engine_insights: object mapping \"Google AI\" and \"Bing AI\" to actionable insights.\n` +
-    `Do NOT reference individual pages or generic SEO definitions. JSON only.`;
+  const systemPrompt =
+    `You are a senior AI SEO consultant. Analyze the entire site for AI-driven search engine visibility (Google AI, Bing AI). Return ONLY a JSON object with keys:\n` +
+    `• score (1–10)\n` +
+    `• score_explanation\n` +
+    `• ai_superpowers (array of exactly 5 {title, explanation})\n` +
+    `• ai_opportunities (array of at least 10 {title, explanation, contact_url})\n` +
+    `• ai_engine_insights (object mapping "Google AI" and "Bing AI" to insight strings)\n` +
+    `JSON only.`;
 
-  const userPrompt = `Site URL: ${fetchUrl}\n\nCONTENT (truncated):\n${content}`;
+  const userPrompt = `Site URL: ${fetchUrl}\n\nCONTENT (first 10000 chars):\n${content}`;
 
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-3.5-turbo',
-    temperature: 0.2,
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user',   content: userPrompt }
-    ]
-  });
-
-  let json;
+  let aiText;
   try {
-    json = JSON.parse(completion.choices[0].message.content);
-  } catch {
-    return res.status(500).json({ error: 'Invalid JSON from AI', aiText: completion.choices[0].message.content });
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      temperature: 0.2,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user',   content: userPrompt }
+      ]
+    });
+    aiText = completion.choices[0].message.content;
+  } catch (e) {
+    return res.status(500).json({ error: 'AI request failed: ' + e.message });
   }
-  res.json(json);
+
+  try {
+    const json = JSON.parse(aiText);
+    return res.json(json);
+  } catch (e) {
+    return res.status(500).json({ error: 'Invalid JSON from AI', aiText });
+  }
 });
 
 app.use(express.static('public'));
