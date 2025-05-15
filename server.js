@@ -29,7 +29,7 @@ app.get('/friendly', async (req, res) => {
   let rawHtml;
   try {
     // Axios follows 301/302/307 by default
-    const response = await axios.get(fetchUrl, { maxRedirects: 5 });
+    const response = await axios.get(fetchUrl, { maxRedirects: 5, validateStatus: status => status < 400 });
     rawHtml = response.data;
   } catch (err) {
     const status = err.response?.status;
