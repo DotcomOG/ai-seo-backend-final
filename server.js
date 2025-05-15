@@ -42,24 +42,23 @@ app.get('/friendly', async (req, res) => {
 
   // Prompt
   const systemPrompt =
-    `You are a senior AI SEO consultant. Analyze the entire site for AI-driven search engine visibility (Google AI, Bing AI). Return ONLY a JSON object with keys:
+    `You are a senior AI SEO consultant. Analyze the entire site for AI-driven search engine visibility in the following AI search platforms: Perplexity AI, Microsoft Bing with Copilot, You.com, ChatGPT-4 with Browsing, and Andi. Return ONLY a JSON object with these keys:
 ` +
-    `• score (1–10 integer),
+    `• score (1–10 integer), representing overall AI SEO readiness for the site.
 ` +
-    `• score_explanation (concise rationale),
+    `• score_explanation (concise rationale).
 ` +
-    `• ai_superpowers: array of exactly 5 items, each an object with keys 'title' and 'explanation'. Each 'explanation' must be 3–5 sentences focusing exclusively on AI SEO factors such as semantic clarity, structured data, content architecture, and AI-indexing relevance.
+    `• ai_superpowers: array of exactly 5 items (strengths), each with keys 'title' and 'explanation'. Each 'explanation' must be 3–5 sentences focusing solely on AI SEO factors (semantic clarity, structured data, content architecture, AI indexing relevance).
 ` +
-    `• ai_opportunities: array of at least 10 items, each an object with keys 'title', 'explanation', and 'contact_url'. Each 'explanation' must be 3–5 sentences describing specific AI SEO improvements needed, business impact, and why AI engines would benefit. Use 'contact_url' set to "https://example.com/contact".
+    `• ai_opportunities: array of at least 10 items (issues), each with keys 'title', 'explanation', and 'contact_url'. Each 'explanation' must be 3–5 sentences describing specific AI SEO improvements needed, business impact, and why AI engines would benefit. Use 'contact_url' = "https://example.com/contact".
 ` +
-    `• ai_engine_insights: object mapping exactly two properties, 'Google AI' and 'Bing AI', each with a string of 2–3 sentences of actionable insights.
+    `• ai_engine_insights: object with exactly five properties: 'Perplexity AI', 'Microsoft Bing with Copilot', 'You.com', 'ChatGPT-4 with Browsing', 'Andi'. Each property's value must be an object with:
 ` +
-    `Do NOT use any other key names or formats.
-`• ai_engine_insights: object with exactly five keys
-  "Perplexity AI", "Microsoft Bing with Copilot", "You.com", "ChatGPT-4 with Browsing", "Andi". Each value must be an object with:
-    – score: integer 1–10
-    – insight: 2–3 sentence actionable recommendation focused on making the site AI-search-ready.
-JSON only, no extra text or markdown.`;
+    `    - score: integer 1–10 rating the site's readiness on that platform.
+` +
+    `    - insight: 2–3 sentence actionable recommendation focused on AI SEO optimizations for that specific platform.
+` +
+    `Do NOT use any other key names or formats. JSON only, no markdown or extra text.`;
 
   const userPrompt = `Site URL: ${fetchUrl}\n\nCONTENT (first 10000 chars):\n${content}`;
 
