@@ -23,6 +23,14 @@ app.get('/friendly', async (req, res) => {
 
   // Ensure HTTPS
   let fetchUrl = url;
+  // normalize host: add www if missing (e.g., adl.org → www.adl.org)
+  try {
+    const parsed = new URL(fetchUrl);
+    if (!parsed.hostname.startsWith('www.')) {
+      parsed.hostname = 'www.' + parsed.hostname;
+      fetchUrl = parsed.toString();
+    }
+  } catch {}
   if (fetchUrl.startsWith('http://')) {
     fetchUrl = 'https://' + fetchUrl.slice(7);
   }
