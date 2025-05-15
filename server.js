@@ -54,7 +54,12 @@ app.get('/friendly', async (req, res) => {
 ` +
     `• ai_engine_insights: object mapping exactly two properties, 'Google AI' and 'Bing AI', each with a string of 2–3 sentences of actionable insights.
 ` +
-    `Do NOT use any other key names or formats. JSON only, no markdown or extra text.`;
+    `Do NOT use any other key names or formats.
+`• ai_engine_insights: object with exactly five keys
+  "Perplexity AI", "Microsoft Bing with Copilot", "You.com", "ChatGPT-4 with Browsing", "Andi". Each value must be an object with:
+    – score: integer 1–10
+    – insight: 2–3 sentence actionable recommendation focused on making the site AI-search-ready.
+JSON only, no extra text or markdown.`;
 
   const userPrompt = `Site URL: ${fetchUrl}\n\nCONTENT (first 10000 chars):\n${content}`;
 
