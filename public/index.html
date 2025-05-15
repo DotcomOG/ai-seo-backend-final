@@ -5,11 +5,72 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI SEO Analyzer 🤖</title>
   <style>
-    /* (your existing styles here) */
+    body { font-family: Helvetica, sans-serif; margin: 2rem; background: #fff; color: #222; }
+    h1 { margin-bottom: 1rem; }
+    form { margin-bottom: 1.5rem; }
+    input, button { padding: .5rem; border-radius: 4px; border:1px solid #ccc; }
+    button { cursor: pointer; background: #0066cc; color: #fff; }
+    button:hover { opacity: .9; }
+    #status { font-style: italic; color: #555; margin-top: .5rem; }
+    #status.error { color: #c00; font-weight: bold; }
+    .section { margin-top: 2rem; }
+    .score { font-size: 3rem; font-weight: bold; color: #111; display: inline-block; }
+    #scoreHelp { background: none; border: none; font-size: 1rem; margin-left: .5rem; }
+    .item { margin-bottom: 1.5rem; }
+    .item-header { font-weight: bold; font-size: 1.1rem; margin-bottom: .25rem; }
+    .item-explanation { margin-left: 1.5rem; line-height: 1.4; }
+    /* Modal styles */
+    .modal-overlay { 
+      position: fixed; top:0; left:0; width:100%; height:100%; 
+      background: rgba(0,0,0,0.5); display:none; align-items:center; justify-content:center;
+    }
+    .modal { background:#fff; padding:1rem; max-width:400px; border-radius:4px; position:relative; }
+    .modal button.close { position:absolute; top:.5rem; right:.5rem; background:none; border:none; font-size:1.2rem; cursor:pointer; }
+    #scoreLegendContent { font-size: 0.9rem; color: #333; }
+    #scoreLegendContent ul { list-style:none; padding-left: 1rem; margin: .5rem 0; }
+    #scoreLegendContent li { margin-bottom: .5rem; }
   </style>
 </head>
 <body>
-  <!-- (your existing form & results markup) -->
+  <h1>AI SEO Analyzer 🤖</h1>
+  <form id="analyzerForm">
+    <input type="url" id="url" placeholder="https://example.com 🌐" required style="width:60%; margin-right:.5rem" />
+    <button type="submit">Analyze 🚀</button>
+  </form>
+  <div id="status"></div>
+
+  <div id="results" style="display:none;">
+    <div class="section">
+      <h2>Overall Score 🎯</h2>
+      <span id="score" class="score"></span>
+      <button id="scoreHelp">❓</button>
+    </div>
+
+    <div class="section">
+      <h2>Strengths 💪</h2>
+      <div id="superpowers"></div>
+    </div>
+
+    <div class="section">
+      <h2>Opportunities 🚀</h2>
+      <div id="opportunities"></div>
+    </div>
+
+    <div class="section">
+      <h2>AI Engine Insights 🔍</h2>
+      <div id="insights"></div>
+    </div>
+
+    <div class="section">
+      <h2>Contact Us 📨</h2>
+      <form id="contactForm">
+        <input type="text" id="name" placeholder="Your Name" required />
+        <input type="email" id="email" placeholder="Your Email" required />
+        <button type="submit">Request Consultation</button>
+      </form>
+      <div id="contactStatus" style="margin-top: .5rem;"></div>
+    </div>
+  </div>
 
   <!-- Score Legend Modal -->
   <div id="scoreModal" class="modal-overlay">
@@ -30,5 +91,3 @@
   <script src="index.js"></script>
 </body>
 </html>
-
-<!-- updated legend: deployed on Thu
