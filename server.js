@@ -1,10 +1,9 @@
 // server.js
-// 2025-05-15 11:30:00 ET — Simplify fetch: try original URL, then fallback to www host if needed
+// 2025-05-15 11:45:00 ET — Switch to native fetch for reliable redirects
 
 require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
-const axios   = require('axios');
 const OpenAI  = require('openai');
 
 const app = express();
@@ -16,42 +15,20 @@ const PORT   = process.env.PORT || 8080;
 
 app.get('/health', (_req, res) => res.send('OK'));
 
-// Helper to add www if missing
-function addWWW(url) {
-  try {
-    const u = new URL(url);
-    if (!u.hostname.startsWith('www.')) {
-      u.hostname = 'www.' + u.hostname;
-      return u.toString();
-    }
-  } catch {}
-  return url;
-}
-
 app.get('/friendly', async (req, res) => {
   const { type, url } = req.query;
   if (type !== 'summary') return res.status(400).json({ error: 'Only summary mode is supported.' });
   if (!url) return res.status(400).json({ error: 'Missing url parameter' });
 
-  // Ensure HTTPS
-  let baseUrl = url.startsWith('http://')
-    ? 'https://' + url.slice(7)
-    : url;
-  baseUrl = baseUrl.replace(/\/$/, '');
+  // Normalize to HTTPS
+  let fetchUrl = url.startsWith('http://') ? 'https://' + url.slice(7) : url;
 
   let rawHtml;
-  const attempts = [baseUrl, addWWW(baseUrl)];
-  for (const attempt of attempts) {
-    try {
-      const resp = await axios.get(attempt, { maxRedirects: 5 });
-      rawHtml = resp.data;
-      break;
-    } catch (e) {
-      continue;
-    }
-  }
-  if (!rawHtml) {
-    return res.status(500).json({ error: 'Failed to fetch URL after attempts.' });
+  try {
+    const response = await fetch(fetchUrl);
+    rawHtml = await response.text();
+  } catch (err) {
+    return res.status(500).json({ error: 'Fetch error: ' + err.message });
   }
 
   // Clean and truncate
@@ -63,17 +40,17 @@ app.get('/friendly', async (req, res) => {
     .trim()
     .slice(0, 10000);
 
-  // Updated prompt for detailed explanations
+  // Prompt
   const systemPrompt =
-    `You are a senior AI SEO consultant. Analyze the entire site for AI-driven search engine visibility (Google AI, Bing AI). Return ONLY a JSON object with keys:\n` +
-    `• score (1–10)\n` +
-    `• score_explanation (concise rationale)\n` +
-    `• ai_superpowers (array of 5 strengths; each with title and 3–5 sentence explanation focused solely on AI SEO factors)\n` +
-    `• ai_opportunities (array of at least 10 issues; each with title, 3–5 sentence AI SEO–focused explanation, and contact_url)\n` +
-    `• ai_engine_insights (object mapping "Google AI" and "Bing AI" to actionable insights)\n` +
-    `JSON only, no extra text or markdown.`;
+    `You are a senior AI SEO consultant. Analyze the entire site for AI-driven search visibility (Google AI, Bing AI). Return ONLY a JSON with:\n` +
+    `score (1–10),\n` +
+    `score_explanation,\n` +
+    `ai_superpowers (5 items with 3–5 sentence explanations),\n` +
+    `ai_opportunities (at least 10 items with 3–5 sentence impact explanations and contact_url),\n` +
+    `ai_engine_insights ("Google AI" and "Bing AI" insights).\n` +
+    `JSON only.`;
 
-  const userPrompt = `Site URL: ${baseUrl}\n\nCONTENT (truncated):\n${content}`;
+  const userPrompt = `Site URL: ${fetchUrl}\n\nCONTENT (first 10000 chars):\n${content}`;
 
   let aiText;
   try {
@@ -92,9 +69,9 @@ app.get('/friendly', async (req, res) => {
 
   try {
     const json = JSON.parse(aiText);
-    return res.json(json);
+    res.json(json);
   } catch (e) {
-    return res.status(500).json({ error: 'Invalid JSON from AI', aiText });
+    res.status(500).json({ error: 'Invalid JSON from AI', aiText });
   }
 });
 
