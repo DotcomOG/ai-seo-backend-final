@@ -1,5 +1,5 @@
 // server.js
-// 2025-05-15 10:45:00 ET — Final simplified redirect handling
+// 2025-05-15 10:30:00 ET — Simplify redirect handling by using axios default behavior
 
 require('dotenv').config();
 const express = require('express');
@@ -21,15 +21,28 @@ app.get('/friendly', async (req, res) => {
   if (type !== 'summary') return res.status(400).json({ error: 'Only summary mode is supported.' });
   if (!url) return res.status(400).json({ error: 'Missing url parameter' });
 
-  // Ensure HTTPS
-  let fetchUrl = url.startsWith('http://')
-    ? 'https://' + url.slice(7)
-    : url;
+  let fetchUrl = url;
+  if (fetchUrl.startsWith('http://')) {
+    fetchUrl = 'https://' + fetchUrl.slice(7);
+  }
 
   let rawHtml;
   try {
-    // Axios follows 301/302/307 by default
-    const response = await axios.get(fetchUrl, { maxRedirects: 5, validateStatus: status => status < 400 });
+    // Let axios follow redirects by default
+  const response = await axios.get(fetchUrl, {
+  maxRedirects: 5,
+  validateStatus: status => status < 400 || status === 307
+});
+let rawHtml;
+if (response.status === 307 && response.headers.location) {
+  const target = response.headers.location.startsWith('http')
+    ? response.headers.location
+    : new URL(response.headers.location, fetchUrl).href;
+  const follow = await axios.get(target);
+  rawHtml = follow.data;
+} else {
+  rawHtml = response.data;
+}
     rawHtml = response.data;
   } catch (err) {
     const status = err.response?.status;
@@ -48,16 +61,15 @@ app.get('/friendly', async (req, res) => {
     .trim()
     .slice(0, 10000);
 
-  const systemPrompt =
-    `You are a senior AI SEO consultant. Analyze the entire site for AI-driven search engine visibility (Google AI, Bing AI). Return ONLY a JSON object with keys:\n` +
-    `• score (1–10)\n` +
-    `• score_explanation\n` +
-    `• ai_superpowers (array of exactly 5 {title, explanation})\n` +
-    `• ai_opportunities (array of at least 10 {title, explanation, contact_url})\n` +
-    `• ai_engine_insights (object mapping "Google AI" and "Bing AI" to insight strings)\n` +
-    `JSON only.`;
+  const systemPrompt = `You are a senior AI SEO consultant. Analyze the entire site for AI-driven search engine visibility (e.g., Google AI, Bing AI). Return ONLY a JSON object with keys:\n` +
+    `score (1–10 integer),\n` +
+    `score_explanation (brief rationale),\n` +
+    `ai_superpowers (array of exactly 5 {title, explanation}),\n` +
+    `ai_opportunities (array of at least 10 {title, explanation, contact_url}),\n` +
+    `ai_engine_insights (object mapping "Google AI" and "Bing AI" to insight strings).\n` +
+    `Do NOT reference individual pages or generic SEO definitions. JSON only.`;
 
-  const userPrompt = `Site URL: ${fetchUrl}\n\nCONTENT (first 10000 chars):\n${content}`;
+  const userPrompt = `Site URL: ${fetchUrl}\n\nCONTENT (truncated to 10000 chars):\n${content}`;
 
   let aiText;
   try {
