@@ -63,9 +63,9 @@
 
     <div class="section">
       <h2>Contact Us 📨</h2>
-      <form id="contactForm">
-        <input type="text" id="name" placeholder="Your Name" required />
-        <input type="email" id="email" placeholder="Your Email" required />
+      <form id="contactForm" action="https://formspree.io/f/yourFormId" method="POST">
+        <input type="text" name="name" placeholder="Your Name" required />
+        <input type="email" name="email" placeholder="Your Email" required />
         <button type="submit">Request Consultation</button>
       </form>
       <div id="contactStatus" style="margin-top: .5rem;"></div>
