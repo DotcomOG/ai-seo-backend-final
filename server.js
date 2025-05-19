@@ -16,8 +16,10 @@ const PORT   = process.env.PORT || 8080;
 app.get('/health', (_req, res) => res.send('OK'));
 
 app.get('/friendly', async (req, res) => {
-  const { type, url } = req.query;
-  if (type !== 'summary') return res.status(400).json({ error: 'Only summary mode is supported.' });
+  const { type = 'summary', url } = req.query;
+  if (!['summary', 'full'].includes(type)) {
+    return res.status(400).json({ error: "Invalid type parameter. Use 'summary' or 'full'." });
+  }
   if (!url) return res.status(400).json({ error: 'Missing url parameter' });
 
   // Normalize to HTTPS

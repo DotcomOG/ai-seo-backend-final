@@ -94,10 +94,14 @@ document.addEventListener('DOMContentLoaded', () => {
   scoreHelpBtn.addEventListener('click', () => modalOverlay.style.display = 'flex');
   closeModalBtn.addEventListener('click', () => modalOverlay.style.display = 'none');
 
-  // Contact form
-  contactForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    contactStatus.textContent = 'Thank you! We will be in touch soon. 🙏';
-    contactForm.reset();
-  });
+  // Contact form (if present)
+  if (contactForm) {
+    contactForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (contactStatus) {
+        contactStatus.textContent = 'Thank you! We will be in touch soon. 🙏';
+      }
+      contactForm.reset();
+    });
+  }
 });
