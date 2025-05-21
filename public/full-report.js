@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const statusEl = document.getElementById('status');
   const resultsEl = document.getElementById('results');
   const urlParams = new URLSearchParams(window.location.search);
-  const url       = urlParams.get('url');
+  const url = urlParams.get('url');
 
   if (!url) {
     statusEl.textContent = 'Error: Missing URL parameter.';
@@ -45,7 +45,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     Object.entries(data.ai_engine_insights || {}).forEach(([engine, detail]) => {
       const div = document.createElement('div');
       div.className = 'engine-insight';
-      div.innerHTML = `<h3 class="engine-name">${engine}</h3><p>${detail}</p>`;
+      if (detail && typeof detail === 'object') {
+        const score = detail.score ?? 'N/A';
+        const text = detail.insight ?? '';
+        div.innerHTML = `<h3 class="engine-name">${engine} (Score: ${score}/10)</h3><p>${text}</p>`;
+      } else {
+        div.innerHTML = `<h3 class="engine-name">${engine}</h3><p>${detail}</p>`;
+      }
       insightsContainer.append(div);
     });
 
@@ -56,9 +62,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     statusEl.classList.add('error');
   }
 
-  document.getElementById('contactForm').addEventListener('submit', e => {
-    e.preventDefault();
-    document.getElementById('contactStatus').textContent = 'Thank you! We will be in touch soon.';
-    e.target.reset();
-  });
+  const contactForm = document.getElementById('contactForm');
+  const contactStatus = document.getElementById('contactStatus');
+  if (contactForm) {
+    contactForm.addEventListener('submit', e => {
+      e.preventDefault();
+      if (contactStatus) {
+        contactStatus.textContent = 'Thank you! We will be in touch soon.';
+      }
+      e.target.reset();
+    });
+  }
 });
