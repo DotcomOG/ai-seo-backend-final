@@ -16,22 +16,15 @@ const allowedOrigins = [
   'https://www.ai-seo-backend-final.vercel.app'
 ];
 
-// Full CORS configuration with preflight and headers
-const corsOptions = {
+app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error('CORS not allowed for this origin'));
     }
-  },
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-};
-
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Handle preflight requests
+  }
+}));
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -65,7 +58,6 @@ app.get('/friendly', async (req, res) => {
     const title = $('title').text();
     const metaDescription = $('meta[name="description"]').attr('content') || '';
 
-    // Simulated scores for demonstration
     res.json({
       title,
       description: metaDescription,
