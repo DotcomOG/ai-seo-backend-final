@@ -65,6 +65,7 @@ app.get('/friendly', async (req, res) => {
     const title = $('title').text();
     const metaDescription = $('meta[name="description"]').attr('content') || '';
 
+    // Simulated scores for demonstration
     res.json({
       title,
       description: metaDescription,
@@ -97,7 +98,6 @@ app.get('/friendly', async (req, res) => {
   }
 });
 
-// Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
