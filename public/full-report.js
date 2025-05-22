@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   statusEl.textContent = 'Analyzing full report…';
 
   try {
-    const res = await fetch(`/friendly?type=full&url=${encodeURIComponent(url)}`);
+   const res = await fetch(`https://stunning-goldfish-5j9jj5gqvv92vx7w-3000.app.github.dev/friendly?url=${encodeURIComponent(url)}`);
     if (!res.ok) throw new Error((await res.json()).error || res.statusText);
     const data = await res.json();
 

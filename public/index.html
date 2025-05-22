@@ -66,17 +66,25 @@
     <h2>Contact Us 📨</h2>
     <!-- Wix Form Embed -->
     <div id="wix-form-container" style="width:100%; max-width:600px; margin:0 auto;"></div>
-    <script src="https://static.parastorage.com/services/forms-renderer/2.0.0/forms-renderer.min.js"></script>
-    <script>
-      const wixFormConfig = {
-        formUrl: "https://your-site.wixsite.com/your-page/form-page",
-        container: "#wix-form-container",
-        width: "100%",
-        height: "600px",
-        theme: { primaryColor: "#0066cc", textColor: "#222" }
-      };
-      WixFormsRenderer.render(wixFormConfig);
-    </script>
+    <script src="https://static.parastorage.com/services/forms-renderer/2.0.0/forms-renderer.min.js" onload="renderWixForm()" defer></script>
+<script>
+  function renderWixForm() {
+    if (typeof WixFormsRenderer === 'undefined') {
+      console.error('WixFormsRenderer not available.');
+      return;
+    }
+
+    const wixFormConfig = {
+      formUrl: "https://www.redstringprop.com/blank",  // <-- Replace this with your actual Wix form page
+      container: "#wix-form-container",
+      width: "100%",
+      height: "600px",
+      theme: { primaryColor: "#0066cc", textColor: "#222" }
+    };
+
+    WixFormsRenderer.render(wixFormConfig);
+  }
+</script>
     <div id="contactStatus" style="margin-top: 0.5rem;"></div>
   </div>    </div>
   </div>
