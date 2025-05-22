@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const url = rawUrl.startsWith('http://') ? 'https://' + rawUrl.slice(7) : rawUrl;
 
     try {
-      const res = await fetch(`/friendly?type=summary&url=${encodeURIComponent(url)}`);
+      const res = await fetch(`https://stunning-goldfish-5j9jj5gqvv92vx7w-3000.app.github.dev/friendly?url=${encodeURIComponent(url)}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || res.statusText);
 
